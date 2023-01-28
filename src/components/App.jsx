@@ -15,7 +15,8 @@ export class App extends Component {
     modalImg: {},
     status: 'idle',
     page: 1,
-    totalPages: null,
+    // totalPages: null,
+    totalImages: null,
     showModal: false,
   };
 
@@ -40,10 +41,10 @@ export class App extends Component {
     this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
-  handleReceivedData = ({ totalPages, normalizedHits }) => {
+  handleReceivedData = ({ totalImages, normalizedHits }) => {
     this.setState({ status: 'resolved' });
     this.setState(({ images }) => {
-      return { images: [...images, ...normalizedHits], totalPages };
+      return { images: [...images, ...normalizedHits], totalImages };
     });
   };
 
@@ -64,8 +65,15 @@ export class App extends Component {
   };
 
   render() {
-    const { status, images, totalPages, page, showModal, modalImg } =
-      this.state;
+    const {
+      status,
+      images,
+      // totalPages,
+      // page,
+      showModal,
+      modalImg,
+      totalImages,
+    } = this.state;
 
     return (
       <div>
@@ -82,7 +90,11 @@ export class App extends Component {
 
         {status === 'resolved' && (
           <>
-            {totalPages > 1 && page < totalPages && (
+            {/* {totalPages > 1 && page < totalPages && (
+              <LoadMoreBtn onLoadMoreClick={this.onLoadMoreClick} />
+            )} */}
+
+            {totalImages !== images.length && (
               <LoadMoreBtn onLoadMoreClick={this.onLoadMoreClick} />
             )}
           </>

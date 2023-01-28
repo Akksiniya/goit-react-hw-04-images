@@ -18,8 +18,10 @@ export async function searchImages(query, page = 1) {
   } = await axios.get(`?q=${query}`, params);
 
   const normalizedHits = normalizeHits(hits);
-  const totalPages = getTotalPages(totalHits);
-  return { totalPages, normalizedHits };
+  // const totalPages = getTotalPages(totalHits);
+  const totalImages = getTotalImages(totalHits);
+  // return { totalPages, normalizedHits };
+  return { totalImages, normalizedHits };
 }
 
 const normalizeHits = hits => {
@@ -28,7 +30,11 @@ const normalizeHits = hits => {
   });
 };
 
-const getTotalPages = totalHits => {
-  const imagesPerPage = 12;
-  return Math.ceil(totalHits / imagesPerPage);
+// const getTotalPages = totalHits => {
+//   const imagesPerPage = 12;
+//   return Math.ceil(totalHits / imagesPerPage);
+// };
+
+const getTotalImages = totalHits => {
+  return totalHits;
 };
