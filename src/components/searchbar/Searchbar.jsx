@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { ImSearch } from 'react-icons/im';
 
 import {
@@ -8,45 +8,41 @@ import {
   FormInput,
 } from './Searchbar.styled';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
+export function Searchbar({ onSubmit }) {
+  const [query, setQuery] = useState('');
+
+  const handleNameChange = event => {
+    setQuery(event.currentTarget.value.toLowerCase());
   };
 
-  handleNameChange = event => {
-    this.setState({ query: event.currentTarget.value.toLowerCase() });
-  };
-
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
 
-    if (this.state.query.trim() === '') {
+    if (query.trim() === '') {
       alert('Enter your request please');
 
       return;
     }
 
-    this.props.onSubmit(this.state.query);
+    onSubmit(query);
   };
 
-  render() {
-    return (
-      <SearchbarHeader>
-        <SearchForm onSubmit={this.handleSubmit}>
-          <SearchFormBtn type="submit">
-            <ImSearch />
-          </SearchFormBtn>
+  return (
+    <SearchbarHeader>
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchFormBtn type="submit">
+          <ImSearch />
+        </SearchFormBtn>
 
-          <FormInput
-            type="text"
-            autocomplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.query}
-            onChange={this.handleNameChange}
-          />
-        </SearchForm>
-      </SearchbarHeader>
-    );
-  }
+        <FormInput
+          type="text"
+          autocomplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={query}
+          onChange={handleNameChange}
+        />
+      </SearchForm>
+    </SearchbarHeader>
+  );
 }

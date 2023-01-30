@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { searchImages } from 'api/searchImages';
 
@@ -8,100 +8,69 @@ import { Modal } from './modal/Modal';
 import { Loader } from './loader/Loader';
 import { LoadMoreBtn } from './button/Button';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    modalImg: {},
-    status: 'idle',
-    page: 1,
-    // totalPages: null,
-    totalImages: null,
-    showModal: false,
-  };
+export function App() {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [modalImg, setModalImg] = useState({});
+  const [status, setStatus] = useState('idle');
+  const [page, setPage] = useState(1);
+  const [totalImages, setTotalImages] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  componentDidUpdate(_, prevState) {
-    const { page } = this.state;
-    const prevQuery = prevState.query;
-    const nextQuery = this.state.query;
-
-    if (prevQuery !== nextQuery || prevState.page !== page) {
-      this.setState({ status: 'pending' });
-      searchImages(nextQuery, page)
-        .then(this.handleReceivedData)
-        .catch(this.setState({ status: 'rejected' }));
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-  }
 
-  handleFormSubmit = query => {
-    this.setState({ query, page: 1, images: [] });
+    setStatus('pending');
+
+    searchImages({ query, page })
+      .then(({ totalImages, normalizedHits }) => {
+        setImages(PrevImages => [...PrevImages, ...normalizedHits]);
+        setTotalImages(totalImages);
+        setStatus('resolved');
+      })
+      .catch(setStatus('rejected'));
+  }, [query, page]);
+
+  const handleFormSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  handleReceivedData = ({ totalImages, normalizedHits }) => {
-    this.setState({ status: 'resolved' });
-    this.setState(({ images }) => {
-      return { images: [...images, ...normalizedHits], totalImages };
-    });
+  const addLargeImgToState = modalImg => {
+    setModalImg(modalImg);
+    setShowModal(true);
   };
 
-  addLargeImgToState = modalImg => {
-    this.setState({ modalImg });
-    this.setState({ showModal: true });
+  const onLoadMoreClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleError = msg => {
-    console.log(msg);
-    this.setState({ status: 'rejected' });
-  };
+  return (
+    <div>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {images.length > 0 && (
+        <ImageGallery images={images} addLargeImgToState={addLargeImgToState} />
+      )}
+      {status === 'pending' && <Loader />}
 
-  onLoadMoreClick = () => {
-    this.setState(({ page }) => {
-      return { page: page + 1 };
-    });
-  };
+      {showModal && <Modal modalImg={modalImg} onClose={toggleModal} />}
 
-  render() {
-    const {
-      status,
-      images,
-      // totalPages,
-      // page,
-      showModal,
-      modalImg,
-      totalImages,
-    } = this.state;
+      {status === 'resolved' && (
+        <>
+          {totalImages !== images.length && (
+            <LoadMoreBtn onLoadMoreClick={onLoadMoreClick} />
+          )}
+        </>
+      )}
 
-    return (
-      <div>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {images.length > 0 && (
-          <ImageGallery
-            images={this.state.images}
-            addLargeImgToState={this.addLargeImgToState}
-          />
-        )}
-        {status === 'pending' && <Loader />}
-
-        {showModal && <Modal modalImg={modalImg} onClose={this.toggleModal} />}
-
-        {status === 'resolved' && (
-          <>
-            {/* {totalPages > 1 && page < totalPages && (
-              <LoadMoreBtn onLoadMoreClick={this.onLoadMoreClick} />
-            )} */}
-
-            {totalImages !== images.length && (
-              <LoadMoreBtn onLoadMoreClick={this.onLoadMoreClick} />
-            )}
-          </>
-        )}
-
-        {status === 'rejected' && <h2>sorry, no results for your query</h2>}
-      </div>
-    );
-  }
+      {status === 'rejected' && <h2>sorry, no results for your query</h2>}
+    </div>
+  );
 }
