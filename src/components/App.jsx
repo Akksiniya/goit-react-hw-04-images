@@ -24,7 +24,7 @@ export function App() {
 
     setStatus('pending');
 
-    searchImages({ query, page })
+    searchImages(query, page)
       .then(({ totalImages, normalizedHits }) => {
         setImages(PrevImages => [...PrevImages, ...normalizedHits]);
         setTotalImages(totalImages);
